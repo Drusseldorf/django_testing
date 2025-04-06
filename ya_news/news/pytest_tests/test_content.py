@@ -1,5 +1,3 @@
-from http import client
-
 import pytest
 from django.test.client import Client
 
