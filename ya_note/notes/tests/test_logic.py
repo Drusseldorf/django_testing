@@ -24,7 +24,6 @@ class TestNoteBehavior(CommonSetupCase):
         existing = set(Note.objects.all())
         response = self.guest_client.post(URL_CREATE, data=self.test_payload)
         self.assertEqual(set(Note.objects.all()), existing)
-        
         self.assertFormError(
             response,
             'form',

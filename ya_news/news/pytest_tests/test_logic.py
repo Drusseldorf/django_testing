@@ -92,3 +92,4 @@ def test_random_user_cant_edit_remark(
     assert unchanged.text == remark.text
     assert unchanged.news == remark.news
     assert unchanged.author == remark.author
+    
