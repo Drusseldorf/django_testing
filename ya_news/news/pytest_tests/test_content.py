@@ -1,8 +1,8 @@
 import pytest
+from django.conf import settings
 from django.test.client import Client
 
 from news.forms import CommentForm
-from yanews.settings import NEWS_COUNT_ON_HOME_PAGE
 
 pytestmark = pytest.mark.django_db
 test_client = Client()
@@ -11,7 +11,7 @@ test_client = Client()
 def test_posts_on_main_page(sample_posts, main_page_url):
     response = test_client.get(main_page_url)
     content_objects = response.context["object_list"]
-    assert content_objects.count() == NEWS_COUNT_ON_HOME_PAGE
+    assert content_objects.count() == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
 def test_order_of_posts(sample_posts, client, main_page_url):
@@ -38,5 +38,6 @@ def test_auth_user_has_comment_form(
     random_user_client, post_instance, post_url
 ):
     response = random_user_client.get(post_url)
+    assert "form" in response.context
     form_in_context = response.context.get("form")
     assert isinstance(form_in_context, CommentForm)

@@ -25,4 +25,5 @@ class TestContentPages(CommonSetupCase):
         for page in pages:
             with self.subTest(page=page):
                 response = self.owner_client.get(page)
-                self.assertIsInstance(response.context.get("form"), NoteForm)
+                self.assertIn('form', response.context)
+                self.assertIsInstance(response.context["form"], NoteForm)

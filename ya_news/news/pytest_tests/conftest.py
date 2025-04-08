@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
 
 import pytest
+from django.conf import settings
 from django.test.client import Client
 from django.urls import reverse
 from django.utils import timezone
 
 from news.models import Comment, News
-from yanews.settings import NEWS_COUNT_ON_HOME_PAGE
 
 
 @pytest.fixture
@@ -53,7 +53,7 @@ def sample_posts(db):
             text=f"Содержимое поста {idx + 1}",
             date=datetime.today() - timedelta(days=idx),
         )
-        for idx in range(NEWS_COUNT_ON_HOME_PAGE)
+        for idx in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
 
 

@@ -1,7 +1,9 @@
 from http import HTTPStatus
 
+from django.contrib.auth import get_user
 from pytils.translit import slugify
 
+from notes.forms import WARNING
 from notes.models import Note
 from notes.tests.testing_utils import (URL_CREATE, URL_REMOVE, URL_SUCCESS,
                                        URL_UPDATE, CommonSetupCase)
@@ -20,8 +22,15 @@ class TestNoteBehavior(CommonSetupCase):
 
         self.test_payload["slug"] = self.current_note.slug
         existing = set(Note.objects.all())
-        self.guest_client.post(URL_CREATE, data=self.test_payload)
+        response = self.guest_client.post(URL_CREATE, data=self.test_payload)
         self.assertEqual(set(Note.objects.all()), existing)
+        
+        self.assertFormError(
+            response,
+            'form',
+            'slug',
+            self.current_note.slug + WARNING
+        )
 
     def _create_note_assertions(self, expected_slug):
 
@@ -34,7 +43,7 @@ class TestNoteBehavior(CommonSetupCase):
         self.assertEqual(new_note.title, self.test_payload["title"])
         self.assertEqual(new_note.text, self.test_payload["text"])
         self.assertEqual(new_note.slug, expected_slug)
-        self.assertEqual(new_note.author, self.guest_user)
+        self.assertEqual(new_note.author, get_user(self.guest_client))
 
     def test_empty_slug_autofilled(self):
 

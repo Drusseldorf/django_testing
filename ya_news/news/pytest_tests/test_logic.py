@@ -19,18 +19,20 @@ RESTRICTED_REMARKS = [
 
 
 def test_non_auth_cant_create_remark(client, post_url):
+    initial_comments_count = Comment.objects.count()
     response = client.post(post_url, data=REMARK_PAYLOAD)
     assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.count() == 0
+    assert Comment.objects.count() == initial_comments_count
 
 
 def test_auth_user_can_create_remark(
     random_user_client, post_instance, random_user, post_url
 ):
+    initial_comments_count = Comment.objects.count()
     response = random_user_client.post(post_url, data=REMARK_PAYLOAD)
     assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.count() == 1
-    saved_comment = Comment.objects.get()
+    assert Comment.objects.count() == initial_comments_count + 1
+    saved_comment = Comment.objects.latest('created')
     assert saved_comment.text == REMARK_PAYLOAD["text"]
     assert saved_comment.news == post_instance
     assert saved_comment.author == random_user
@@ -38,9 +40,10 @@ def test_auth_user_can_create_remark(
 
 @pytest.mark.parametrize("bad_data", RESTRICTED_REMARKS)
 def test_no_bad_words_in_remarks(random_user_client, post_url, bad_data):
+    initial_comments_count = Comment.objects.count()
     response = random_user_client.post(post_url, data=bad_data)
     assert response.status_code == HTTPStatus.OK
-    assert Comment.objects.count() == 0
+    assert Comment.objects.count() == initial_comments_count
     form = response.context["form"]
     assert "text" in form.errors
     assert REMARK_WARNING in form.errors["text"]
@@ -49,17 +52,19 @@ def test_no_bad_words_in_remarks(random_user_client, post_url, bad_data):
 def test_owner_can_delete_remark(
     writer_client, post_instance, remark, remark_delete_url
 ):
+    initial_comments_count = Comment.objects.count()
     response = writer_client.post(remark_delete_url)
     assert response.status_code == HTTPStatus.FOUND
-    assert Comment.objects.count() == 0
+    assert Comment.objects.count() == initial_comments_count - 1
 
 
 def test_random_user_cant_delete_remark(
     random_user_client, remark_delete_url, remark
 ):
+    initial_comments_count = Comment.objects.count()
     response = random_user_client.post(remark_delete_url)
     assert response.status_code == HTTPStatus.NOT_FOUND
-    assert Comment.objects.count() == 1
+    assert Comment.objects.count() == initial_comments_count
     same_comment = Comment.objects.get(pk=remark.pk)
     assert same_comment.text == remark.text
     assert same_comment.news == remark.news
