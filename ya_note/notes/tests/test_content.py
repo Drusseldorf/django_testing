@@ -27,4 +27,3 @@ class TestContentPages(CommonSetupCase):
                 response = self.owner_client.get(page)
                 self.assertIn('form', response.context)
                 self.assertIsInstance(response.context["form"], NoteForm)
-                
